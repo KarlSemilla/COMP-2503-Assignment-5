@@ -110,7 +110,7 @@ public class A5
    {
 	   while(inp.hasNext()) 
 	   {
-		   
+		   totalwordcount++;
 	   }
    }
 
