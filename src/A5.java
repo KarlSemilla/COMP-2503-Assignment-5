@@ -15,27 +15,28 @@ import java.util.TreeMap;
 */
 public class A5
 {
-   
-   private HashMap<String, Word> words = new HashMap<String, Word>();
 
-   private String[] stopwords = { "a", "about", "all", "am", "an", 
-         "and", "any", "are", "as", "at", "be", "been", "but", "by", "can", 
-         "cannot", "could", "did", "do", "does", "else", "for", "from", 
-         "get", "got", "had", "has", "have", "he", "her", "hers", "him", 
-         "his", "how", "i", "if", "in", "into", "is", "it", "its", "like", 
-         "more", "me", "my", "no", "now", "not", "of", "on", "one", 
-         "or", "our", "out", "said", "say", "says", "she", "so", "some",
-         "than", "that", "the", "their", "them", "then", "there", "these", 
-         "they", "this", "to", "too", "us", "upon", "was", "we", "were", 
-         "what", "with", "when", "where", "which", "while", "who", 
-          "whom", "why", 
+	private ArrayList<Word> fill = new ArrayList<Word>();
+	private HashMap<Integer, Word> words;
+	
+	private String[] stopwords = { "a", "about", "all", "am", "an", 
+			"and", "any", "are", "as", "at", "be", "been", "but", "by", "can", 
+			"cannot", "could", "did", "do", "does", "else", "for", "from", 
+			"get", "got", "had", "has", "have", "he", "her", "hers", "him", 
+			"his", "how", "i", "if", "in", "into", "is", "it", "its", "like", 
+			"more", "me", "my", "no", "now", "not", "of", "on", "one", 
+			"or", "our", "out", "said", "say", "says", "she", "so", "some",
+			"than", "that", "the", "their", "them", "then", "there", "these", 
+			"they", "this", "to", "too", "us", "upon", "was", "we", "were", 
+			"what", "with", "when", "where", "which", "while", "who", 
+			"whom", "why", 
          "will", "you", "your"};
 
-   private int totalwordcount = 0;
+	private int totalwordcount = 0;
 
-   private int stopwordcount = 0;
+	private int stopwordcount = 0;
 
-   private Scanner inp = new Scanner( System.in);
+	private Scanner inp = new Scanner( System.in);
 
    public static void main(String[ ] args) 
    {	
@@ -82,13 +83,13 @@ public class A5
        System.out.println( "Unique Words: " + words.size()); 
        System.out.println( "Stop Words: " + stopwordcount);
        System.out.println();
-       System.out.println( "10 Most Frequent");
+       System.out.println( "20 Most Frequent");
        //Collections.sort( words, Word.CompFreqDesc); 
-       printWords(10); 
+       printWords(20); 
        System.out.println();
-       System.out.println( "10 Least Frequent");
+       System.out.println( "20 Least Frequent");
        //Collections.sort( words, Word.CompFreqAsc); 
-       printWords(10);
+       printWords(20);
        System.out.println();
        System.out.println( "All");
        //Collections.sort( words); 
@@ -104,13 +105,76 @@ public class A5
    words are all converted to lower case. 
   
    Any non-stopword word is stored in the list of words 
-   and the number of occurances is tracked.
+   and the number of occurrences is tracked.
    */
    private void readFile() 
    {
+	   addStopwords();
 	   while(inp.hasNext()) 
 	   {
-		   totalwordcount++;
+	       String word = inp.next().toLowerCase().trim().replaceAll( "[^a-z]","");
+		   while(inp.hasNext()) {
+		       if(word.length() < 0) {
+				   Word w = new Word(word);
+				   if(fill.isEmpty())
+					   fill.add(w);
+				   else if(findWord(w)) 
+					   fill.get(findIndex(w)).incrCount();
+				   else
+					   fill.add(w);
+				stopwordcount++;
+		       }
+	       }
+	   }
+   }
+   
+   public int genKey(String word) 
+   {
+	   int key = 0;
+	   if(!word.isEmpty()) {
+		   key += (int) word.charAt(0);
+		   genKey(word.substring(1));
+	   }
+	   return key;
+   }
+   
+   public boolean findWord(Word w) 
+   {
+	   boolean check = false;
+	   for(int i = 0; i < fill.size(); i++) {
+		   check = fill.get(i).equals(w);
+	   }
+	   return check;
+   }
+   
+   public int findIndex(Word w) 
+   {
+	   int x = 0;
+	   for(int i = 0; i < fill.size(); i++) {
+		   if(fill.get(i).equals(w)) {
+			   x = i;
+		   }
+	   }
+	   return x;
+   }
+   
+   public void addToHash() 
+   {
+	   int space = totalwordcount + stopwordcount;
+	   words = new HashMap<Integer, Word>(space + ((int) (space * 0.25)));
+	   int key;
+	   for(int i = 0; i < fill.size(); i++) {
+		   key = genKey(fill.get(i).getWord());
+		   key = key % words.size();
+		   words.put(key, fill.get(i));
+	   }
+   }
+   
+   public void addStopwords() 
+   {
+	   for(int i = 0; i < stopwords.length; i++) {
+		   Word w = new Word(stopwords[i]);
+		   fill.add(w);
 	   }
    }
 
@@ -119,6 +183,7 @@ public class A5
    public void run() 
    {
       readFile();
+      addToHash();
       printResults();
    }
 
