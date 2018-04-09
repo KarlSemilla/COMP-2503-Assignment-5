@@ -4,6 +4,8 @@ import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.Iterator;
+import java.util.List;
 
 /** 
  * COMP 2503 Winter 2018 Assignment 1 
@@ -18,6 +20,7 @@ public class A5
 
 	private ArrayList<Word> fill = new ArrayList<Word>();
 	private HashMap<Integer, Word> words;
+	private Iterator<HashMap<Integer, Word>> itr;
 	
 	private String[] stopwords = { "a", "about", "all", "am", "an", 
 			"and", "any", "are", "as", "at", "be", "been", "but", "by", "can", 
@@ -118,11 +121,15 @@ public class A5
 				   Word w = new Word(word);
 				   if(fill.isEmpty())
 					   fill.add(w);
-				   else if(findWord(w)) 
-					   fill.get(findIndex(w)).incrCount();
+				   else if(findWord(w)) {
+					   if(!isStopword(word)) {
+						   fill.get(findIndex(w)).incrCount();
+					   }
+					   stopwordcount++;
+				   }
 				   else
 					   fill.add(w);
-				stopwordcount++;
+				totalwordcount++;
 		       }
 	       }
 	   }
@@ -147,6 +154,16 @@ public class A5
 	   return check;
    }
    
+   public boolean isStopword(String word) {
+	   boolean check = false;
+	   for(int i = 0; i < stopwords.length; i++) {
+		   if(word.equals(stopwords[i])) {
+			   check = true;
+		   }
+	   }
+	   return check;
+   }
+   
    public int findIndex(Word w) 
    {
 	   int x = 0;
@@ -162,11 +179,8 @@ public class A5
    {
 	   int space = totalwordcount + stopwordcount;
 	   words = new HashMap<Integer, Word>(space + ((int) (space * 0.25)));
-	   int key;
 	   for(int i = 0; i < fill.size(); i++) {
-		   key = genKey(fill.get(i).getWord());
-		   key = key % words.size();
-		   words.put(key, fill.get(i));
+		   words.put(i, fill.get(i));
 	   }
    }
    
@@ -177,6 +191,11 @@ public class A5
 		   fill.add(w);
 	   }
    }
+   
+   public void deleteStopWords() 
+   {
+	   while(words.containsValue(stopwords[1])) {}
+   }
 
    /** Run the program. Read the file, then print the results. 
    */
@@ -184,6 +203,7 @@ public class A5
    {
       readFile();
       addToHash();
+      deleteStopWords();
       printResults();
    }
 
